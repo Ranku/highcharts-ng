@@ -112,6 +112,10 @@ angular.module('highcharts-ng', [])
         }
       });
 
+      if (_.has(config, 'redrawCallback')){
+          prependMethod(mergedOptions.chart.events, 'redraw', config.redrawCallback);
+      };
+
       if(config.title) {
         mergedOptions.title = config.title;
       }
@@ -232,7 +236,15 @@ angular.module('highcharts-ng', [])
           prevSeriesOptions = {};
           var config = scope.config || {};
           var mergedOptions = getMergedOptions(scope, element, config);
-          chart = config.useHighStocks ? new Highcharts.StockChart(mergedOptions) : new Highcharts.Chart(mergedOptions);
+          if (config.useHighStocks){
+            chart = new Highcharts.StockChart(mergedOptions);
+          }
+          else if (config.useHighMaps){
+              chart = new Highcharts.Map(mergedOptions);
+          }
+          else {
+            chart = new Highcharts.Chart(mergedOptions);
+          }
           for (var i = 0; i < axisNames.length; i++) {
             if (config[axisNames[i]]) {
               processExtremes(chart, config[axisNames[i]], axisNames[i]);
@@ -244,7 +256,6 @@ angular.module('highcharts-ng', [])
 
         };
         initChart();
-
 
         scope.$watch('config.series', function (newSeries, oldSeries) {
           var needsRedraw = processSeries(newSeries);
